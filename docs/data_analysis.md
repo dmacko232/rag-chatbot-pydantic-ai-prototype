@@ -65,7 +65,7 @@ Files like `198.txt`, `62.txt`, `109.txt`, `163.txt` have 800+ lines. These are 
 
 ## Topic Categories
 
-Files can span multiple categories:
+Files can span multiple categories (keyword-based heuristic — counts are approximate):
 
 | Category | Files |
 |---|---|
@@ -76,6 +76,48 @@ Files can span multiple categories:
 | Sustainability | 64 |
 | AI / Digital | 62 |
 
+## Metadata Patterns
+
+### Year / Publication Date
+
+- 177/254 files mention at least one year (2020–2025 range).
+- 77 files (30%) contain no year at all.
+- File index loosely correlates with recency (lower index ≈ newer), but it's noisy.
+- The most-common year in the text is a reasonable proxy for publication year but not fully reliable — best extracted by LLM.
+
+### Business Segment
+
+Clear signal from explicit mentions:
+
+| Segment | Files |
+|---|---|
+| T-Systems | 73 |
+| Telekom Deutschland | 66 |
+| T-Mobile US | 24 |
+| Deutsche Telekom Group (no specific segment) | remainder |
+
+### Document Type (heuristic, mutually exclusive)
+
+| Type | Files |
+|---|---|
+| General Press Release | 114 |
+| Product / Service Launch | 46 |
+| Deal / Partnership | 35 |
+| Financial Report | 31 |
+| Award / Recognition | 28 |
+
+### Recommended Metadata to Extract
+
+Have the LLM extract three fields per document during the chunking step:
+
+| Field | Type | Values |
+|---|---|---|
+| `year` | `int \| null` | Publication year inferred from content |
+| `business_segment` | `enum` | `t_systems`, `telekom_deutschland`, `t_mobile_us`, `deutsche_telekom_group` |
+| `document_type` | `enum` | `financial_report`, `product_launch`, `partnership`, `award`, `general` |
+
+These go into the `Document` table in SQLite alongside the source text, and are inherited by each `Chunk`. They can be used as pre-filters in hybrid search and are queryable via the SQL tool on the backend.
+
 ## Implications for the Pipeline
 
 1. **Cleaning step needed**: Strip the cookie-consent artifact (28 files) and leading spaces on paragraphs.
@@ -83,5 +125,5 @@ Files can span multiple categories:
 3. **Financial report handling**: The 6 large financial reports should likely be chunked differently (tables, KPIs, narrative sections). Consider flagging these as a distinct document type.
 4. **Chunk size target**: Given median file length of ~600 words, many files may be 1–3 chunks. Aim for chunks of ~200–400 words for retrieval, with the larger surrounding context stored for LLM (small-to-big).
 5. **RAPTOR summaries**: Useful for questions like "How is Deutsche Telekom performing overall?" or "What are Telekom's sustainability goals?" — abstractive summaries across many documents.
-6. **No metadata available**: Files have no dates, categories, or tags. The LLM chunking step could optionally extract lightweight metadata (topic, date if mentioned in text) to aid retrieval.
+6. **Metadata extraction**: LLM should extract `year`, `business_segment`, and `document_type` per document. Stored in the `Document` table and used for retrieval filtering and SQL queries.
 7. **Corpus size is small**: ~230k tokens total. The entire corpus fits in a single LLM context window. This is good for RAPTOR (cheap to summarize) but means retrieval quality matters more than scale optimization.
