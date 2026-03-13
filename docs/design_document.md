@@ -22,18 +22,26 @@ src/
 
 ### Shared (`src/shared`)
 
-- Data models used by both pipeline and backend: `Document`, `Chunk`, etc.
 - Common utilities (e.g. vector store client, Cohere client wrappers)
+- **Data models / DB tables** used by both pipeline and backend:
+
+| Table | Key columns |
+|---|---|
+| `Document` | `id`, `source_file`, `content`, `year`, `business_segment`, `document_type` |
+| `Chunk` | `id`, `document_id` (FK), `content`, `content_for_llm` (larger context), `embedding`, metadata inherited from Document |
+
+Metadata fields (`year`, `business_segment`, `document_type`) are extracted by LLM during pipeline ingestion. See [data analysis](data_analysis.md#recommended-metadata-to-extract) for values.
 
 ### Data Pipeline (`src/data_pipeline`)
 
 - **Input**: Local disk (abstracted so it's swappable to Azure Blob)
 - **Pattern**: Pipeline pattern — each step is a class, pipeline orchestrates them
 - **Chunking**: Input is HTML that has been parsed to plain text (formatting lost). Use LLM to infer meaningful chunk boundaries based on semantic meaning, producing chunks suitable for search.
+- **Metadata extraction**: During chunking, LLM also extracts per-document metadata (`year`, `business_segment`, `document_type`) and stores it in the `Document` table.
 - **Embeddings**: Cohere embedding model
-- **Vector store**: SQLite vector extension
+- **Vector store**: SQLite vector extension — populates `Document` and `Chunk` tables
 - **RAPTOR**: Generate hierarchical summaries for answering global/abstract questions
-- **Small-to-big**: Store smaller chunks for retrieval, larger surrounding context for LLM
+- **Small-to-big**: Store smaller chunks for retrieval, larger surrounding context for LLM (`content` vs `content_for_llm` on `Chunk`)
 - **Observability**: Arize Phoenix tracing
 
 ### Backend (`src/backend`)
@@ -48,10 +56,12 @@ src/
   - **Presentation** (API routes) — each route maps to a use case; handles DB persistence
   - **Application** (use cases + tools) — agents live under use cases
   - **Domain** (models/interfaces)
-- **Retrieval tool** (Pipeline-pattern class):
-  1. Hybrid search (vector + keyword)
-  2. Cohere reranker
-  3. Score thresholding — drop anything below **0.3** reranker score
+- **Agent tools**:
+  1. **Retrieval tool** (Pipeline-pattern class):
+     1. Hybrid search (vector + keyword) over `Chunk` table
+     2. Cohere reranker
+     3. Score thresholding — drop anything below **0.3** reranker score
+  2. **SQL tool** — read-only access to the `Document` table so the LLM can answer aggregation/counting questions (e.g. "how many press releases are about T-Mobile US?", "list all financial reports from 2023")
 - **Citations**: LLM generates inline citations after each statement, referencing source chunks. Response is nicely formatted markdown.
 - **DI**: All classes behind interfaces for dependency injection
 - **Chat history**: Separate endpoint(s) and use cases
@@ -127,7 +137,21 @@ src/
 - [ ] Build chat history sidebar
 - [ ] Connect to backend API (auth + streaming chat)
 
-### Phase 5 — Polish & Docs
+### Phase 5 — Evaluation
+
+- [ ] Create a diverse set of **30 eval questions** covering different question types:
+  - Factual retrieval ("What 5G campus network did Telekom deploy for RTL?")
+  - Aggregation / SQL ("How many press releases mention T-Systems?")
+  - Comparison ("How did Telekom's revenue in Q3 2023 compare to Q3 2022?")
+  - Global / abstract ("What is Deutsche Telekom's sustainability strategy?")
+  - Temporal ("What partnerships did Telekom announce in 2024?")
+  - Multi-hop ("Which companies use Telekom's campus network, and what frequencies do they operate on?")
+- [ ] Run eval set through the pipeline, measure:
+  - **Correctness** (LLM-as-judge via Arize Phoenix)
+  - **Precision@10** on retrieved chunks
+- [ ] Iterate on prompts, chunk sizes, threshold based on results
+
+### Phase 6 — Polish & Docs
 
 - [ ] Finalise Docker Compose (all services run together)
 - [ ] Write simple and brief workflow documentation
