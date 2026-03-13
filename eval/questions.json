@@ -1,0 +1,182 @@
+[
+  {
+    "id": 1,
+    "type": "factual",
+    "question": "What 5G campus network did Deutsche Telekom deploy for RTL Deutschland?",
+    "expected_source": "0.txt"
+  },
+  {
+    "id": 2,
+    "type": "factual",
+    "question": "What is the GesundheitsID that T-Systems is developing with AOK?",
+    "expected_source": "1.txt"
+  },
+  {
+    "id": 3,
+    "type": "factual",
+    "question": "What is APPVISORY and how does it protect business smartphones?",
+    "expected_source": "50.txt"
+  },
+  {
+    "id": 4,
+    "type": "factual",
+    "question": "What features does the Fairphone 5 offer and how is it sold through Deutsche Telekom?",
+    "expected_source": "100.txt"
+  },
+  {
+    "id": 5,
+    "type": "factual",
+    "question": "How much did Deutsche Telekom invest in Teridion Technologies?",
+    "expected_source": "200.txt"
+  },
+  {
+    "id": 6,
+    "type": "factual",
+    "question": "What is the 5G campus network that Arburg installed at its headquarters?",
+    "expected_source": "253.txt"
+  },
+  {
+    "id": 7,
+    "type": "factual",
+    "question": "What is Business GPT and what modules does Deutsche Telekom offer?",
+    "expected_source": "10.txt"
+  },
+  {
+    "id": 8,
+    "type": "factual",
+    "question": "What Google Cloud certifications has T-Systems achieved?",
+    "expected_source": "75.txt"
+  },
+  {
+    "id": 9,
+    "type": "aggregation",
+    "question": "How many press releases mention T-Systems?",
+    "expected_answer_contains": "73"
+  },
+  {
+    "id": 10,
+    "type": "aggregation",
+    "question": "How many documents are classified as financial reports?",
+    "expected_answer_contains": "financial"
+  },
+  {
+    "id": 11,
+    "type": "aggregation",
+    "question": "How many press releases are about T-Mobile US?",
+    "expected_answer_contains": "t_mobile"
+  },
+  {
+    "id": 12,
+    "type": "aggregation",
+    "question": "List all press releases classified as partnerships.",
+    "expected_answer_contains": "partnership"
+  },
+  {
+    "id": 13,
+    "type": "aggregation",
+    "question": "How many documents are from the year 2023?",
+    "expected_answer_contains": "2023"
+  },
+  {
+    "id": 14,
+    "type": "comparison",
+    "question": "How did Deutsche Telekom's customer numbers in Q3 2023 compare to Q3 2022?",
+    "expected_source": "62.txt"
+  },
+  {
+    "id": 15,
+    "type": "comparison",
+    "question": "What are the differences between Business GPT modules M, L, and XL?",
+    "expected_source": "10.txt"
+  },
+  {
+    "id": 16,
+    "type": "comparison",
+    "question": "Compare the Fairphone 5 with its predecessor the Fairphone 4.",
+    "expected_source": "100.txt"
+  },
+  {
+    "id": 17,
+    "type": "global",
+    "question": "What is Deutsche Telekom's overall sustainability strategy?",
+    "expected_answer_contains": "climate"
+  },
+  {
+    "id": 18,
+    "type": "global",
+    "question": "What are the main areas where Deutsche Telekom uses 5G campus networks?",
+    "expected_answer_contains": "campus"
+  },
+  {
+    "id": 19,
+    "type": "global",
+    "question": "How is Deutsche Telekom positioning itself in the AI space?",
+    "expected_answer_contains": "AI"
+  },
+  {
+    "id": 20,
+    "type": "global",
+    "question": "What cybersecurity services does Deutsche Telekom offer to business customers?",
+    "expected_answer_contains": "security"
+  },
+  {
+    "id": 21,
+    "type": "global",
+    "question": "What cloud partnerships and services does Deutsche Telekom / T-Systems provide?",
+    "expected_answer_contains": "cloud"
+  },
+  {
+    "id": 22,
+    "type": "temporal",
+    "question": "What partnerships did Deutsche Telekom announce in 2024?",
+    "expected_answer_contains": "2024"
+  },
+  {
+    "id": 23,
+    "type": "temporal",
+    "question": "What new products or services did Telekom launch in 2023?",
+    "expected_answer_contains": "2023"
+  },
+  {
+    "id": 24,
+    "type": "temporal",
+    "question": "What were the key financial results for Deutsche Telekom in Q3 2022?",
+    "expected_source": "198.txt"
+  },
+  {
+    "id": 25,
+    "type": "multi_hop",
+    "question": "Which companies use Deutsche Telekom's 5G campus networks, and what frequencies do they operate on?",
+    "expected_answer_contains": "GHz"
+  },
+  {
+    "id": 26,
+    "type": "multi_hop",
+    "question": "What health sector digital identity solutions does T-Systems provide, and which health insurers use them?",
+    "expected_source": "1.txt"
+  },
+  {
+    "id": 27,
+    "type": "multi_hop",
+    "question": "What SD-WAN and connectivity solutions does Deutsche Telekom offer, and which technology partners are involved?",
+    "expected_answer_contains": "Teridion"
+  },
+  {
+    "id": 28,
+    "type": "multi_hop",
+    "question": "What sovereign cloud offerings does T-Systems provide and which cloud providers are they built on?",
+    "expected_answer_contains": "Google"
+  },
+  {
+    "id": 29,
+    "type": "factual",
+    "question": "What is the uCPE box and what network functions does it combine?",
+    "expected_source": "150.txt"
+  },
+  {
+    "id": 30,
+    "type": "global",
+    "question": "Summarize Deutsche Telekom's strategy for fiber and broadband expansion.",
+    "expected_answer_contains": "fiber"
+  }
+]
