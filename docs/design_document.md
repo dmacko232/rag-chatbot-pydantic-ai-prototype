@@ -22,7 +22,6 @@ src/
 
 ### Shared (`src/shared`)
 
-- **Configuration**: Pydantic Settings for all config (API keys, DB paths, model names, thresholds) — loaded from `.env`
 - Common utilities (e.g. vector store client, Cohere client wrappers)
 - **Data models / DB tables** used by both pipeline and backend:
 
@@ -81,9 +80,14 @@ Metadata fields (`year`, `business_segment`, `document_type`) are extracted by L
 - Docker Compose packaging for all services
 - Secrets in `.env` files
 
+### Configuration
+
+- **Pydantic Settings** for all configuration (API keys, DB paths, model names, thresholds)
+- Loaded from `.env` files, overridable via environment variables
+
 ### Tooling & Dev Practices
 
-- **Dependency management**: Poetry
+- **Dependency management**: uv
 - **Type checking**: ty
 - **Linting/formatting**: Ruff
 - **Pre-commit hook**: Runs Ruff + ty on every commit
@@ -95,7 +99,7 @@ Metadata fields (`year`, `business_segment`, `document_type`) are extracted by L
 
 ### Phase 0 — Setup
 
-- [ ] Init Poetry project, configure Ruff + ty
+- [ ] Init uv project, configure Ruff + ty
 - [ ] Set up pre-commit hook (Ruff + ty)
 - [ ] Set up Docker Compose skeleton (backend, frontend, Phoenix)
 - [ ] Create `.env.example` with placeholder secrets (Azure OpenAI, Cohere keys)
