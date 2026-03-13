@@ -22,6 +22,7 @@ src/
 
 ### Shared (`src/shared`)
 
+- **Configuration**: Pydantic Settings for all config (API keys, DB paths, model names, thresholds) — loaded from `.env`
 - Common utilities (e.g. vector store client, Cohere client wrappers)
 - **Data models / DB tables** used by both pipeline and backend:
 
