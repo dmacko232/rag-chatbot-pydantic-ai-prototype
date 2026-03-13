@@ -130,5 +130,6 @@ src/
 ### Phase 5 — Polish & Docs
 
 - [ ] Finalise Docker Compose (all services run together)
-- [ ] Write workflow documentation
+- [ ] Write simple and brief workflow documentation
 - [ ] Document limitations and future steps
+- [ ] Simple bash script to execute everything
