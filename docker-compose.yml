@@ -1,0 +1,44 @@
+services:
+  pipeline:
+    build:
+      context: .
+      dockerfile: docker/pipeline.Dockerfile
+    env_file:
+      - .env
+    volumes:
+      - db-data:/app/data
+      - ./config:/app/config
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_PATH=/app/data/rag.db
+    volumes:
+      - db-data:/app/data
+      - ./config:/app/config
+    depends_on:
+      pipeline:
+        condition: service_completed_successfully
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000/api
+    ports:
+      - "3000:3000"
+
+  phoenix:
+    image: arizephoenix/phoenix:latest
+    ports:
+      - "6006:6006"
+
+volumes:
+  db-data:

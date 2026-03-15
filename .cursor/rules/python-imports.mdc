@@ -1,0 +1,24 @@
+---
+description: Use only absolute imports in all Python code
+globs: "**/*.py"
+alwaysApply: false
+---
+
+# Python Imports
+
+Always use absolute imports rooted at `src/`. Never use relative imports.
+
+```python
+# ❌ BAD — relative imports
+from .models import Document
+from ..shared.config import Settings
+
+# ✅ GOOD — absolute imports from src root
+from shared.models import Document
+from shared.config import Settings
+from backend.domain.models import User
+from data_pipeline.pipeline import DataPipeline
+from data_pipeline.steps import FileDocumentLoader
+```
+
+The `src/` directory is on `PYTHONPATH` (configured in `pyproject.toml` via `[tool.ruff] src = ["src"]`). All imports should reference packages directly: `shared`, `backend`, `data_pipeline`.
