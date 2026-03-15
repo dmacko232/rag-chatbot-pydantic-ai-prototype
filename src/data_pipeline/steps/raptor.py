@@ -2,37 +2,19 @@ import json
 import logging
 
 from openai import AsyncAzureOpenAI
-from sqlmodel import Session, select
+from sqlmodel import Session
 
-from data_pipeline.pipeline import PipelineContext, Step
+from data_pipeline.interfaces import IRaptorSummarizer
+from data_pipeline.models import RawDocument
 from shared.config import Settings
 from shared.db import create_db_engine
 from shared.models import Chunk, Document
+from shared.prompts import get_prompt
 
 logger = logging.getLogger(__name__)
 
-RAPTOR_SYSTEM_PROMPT = """You are a summarisation assistant. Given a collection of press release excerpts from Deutsche Telekom, produce a set of high-level summary passages that capture the main themes and facts.
 
-These summaries will be used to answer global/abstract questions like:
-- "What is Deutsche Telekom's overall strategy?"
-- "What sustainability initiatives does Telekom pursue?"
-- "How has Telekom's financial performance trended?"
-
-Generate 5-10 summary passages, each 150-300 words, covering distinct themes.
-
-Respond with valid JSON:
-{
-  "summaries": [
-    {"content": "<summary passage>"}
-  ]
-}"""
-
-RAPTOR_BATCH_SIZE = 20
-
-
-class RaptorStep(Step):
-    """Generate RAPTOR hierarchical summaries for global/abstract questions."""
-
+class LLMRaptorSummarizer(IRaptorSummarizer):
     def __init__(self, settings: Settings) -> None:
         self._client = AsyncAzureOpenAI(
             api_key=settings.azure_openai_api_key,
@@ -42,16 +24,16 @@ class RaptorStep(Step):
         self._deployment = settings.azure_openai_deployment
         self._engine = create_db_engine(settings)
 
-    async def run(self, ctx: PipelineContext) -> PipelineContext:
-        all_excerpts = [doc["content"][:500] for doc in ctx.raw_documents]
+    async def summarize(self, documents: list[RawDocument]) -> None:
+        excerpts = [doc.content[:500] for doc in documents]
+        combined = "\n\n---\n\n".join(excerpts)
+        logger.info("Generating RAPTOR summaries from %d document excerpts", len(excerpts))
 
-        combined = "\n\n---\n\n".join(all_excerpts)
-        logger.info("Generating RAPTOR summaries from %d document excerpts", len(all_excerpts))
-
+        system_prompt = get_prompt("raptor_system_prompt")
         response = await self._client.chat.completions.create(
             model=self._deployment,
             messages=[
-                {"role": "system", "content": RAPTOR_SYSTEM_PROMPT},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": combined},
             ],
             temperature=0.2,
@@ -63,7 +45,7 @@ class RaptorStep(Step):
             result = json.loads(raw)
         except json.JSONDecodeError:
             logger.error("Failed to parse RAPTOR response")
-            return ctx
+            return
 
         summaries = result.get("summaries", [])
         logger.info("Generated %d RAPTOR summaries", len(summaries))
@@ -88,5 +70,3 @@ class RaptorStep(Step):
                 session.add(chunk)
 
             session.commit()
-
-        return ctx

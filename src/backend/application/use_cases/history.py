@@ -1,17 +1,23 @@
 import json
 
+from backend.application.dto import MessageDTO, SessionDetail, SessionSummary
 from backend.domain.interfaces import IMessageRepository, ISessionRepository
-from backend.domain.models import ChatMessage, ChatMessageResponse, ChatSession, SessionDetailResponse, SessionResponse
 
 
 class ListSessionsUseCase:
     def __init__(self, session_repo: ISessionRepository) -> None:
         self._session_repo = session_repo
 
-    def execute(self, user_id: int) -> list[SessionResponse]:
+    def execute(self, user_id: int) -> list[SessionSummary]:
         sessions = self._session_repo.list_by_user(user_id)
         return [
-            SessionResponse(id=s.id, title=s.title, created_at=s.created_at, updated_at=s.updated_at) for s in sessions
+            SessionSummary(
+                id=s.id,
+                title=s.title,
+                created_at=s.created_at,
+                updated_at=s.updated_at,
+            )
+            for s in sessions
         ]
 
 
@@ -20,17 +26,17 @@ class GetSessionUseCase:
         self._session_repo = session_repo
         self._message_repo = message_repo
 
-    def execute(self, session_id: int, user_id: int) -> SessionDetailResponse | None:
+    def execute(self, session_id: int, user_id: int) -> SessionDetail | None:
         session = self._session_repo.get_by_id(session_id, user_id)
         if not session:
             return None
 
         messages = self._message_repo.list_by_session(session_id)
-        return SessionDetailResponse(
+        return SessionDetail(
             id=session.id,
             title=session.title,
             messages=[
-                ChatMessageResponse(
+                MessageDTO(
                     role=m.role,
                     content=m.content,
                     citations=json.loads(m.citations),

@@ -4,10 +4,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.application.repositories import UserRepository
+from backend.application.services.auth import AuthService
+from backend.application.services.database import get_engine, get_session
 from backend.domain.models import User
-from backend.infrastructure.auth import AuthService
-from backend.infrastructure.database import get_engine, get_session
-from backend.infrastructure.repositories import UserRepository
 from backend.presentation.routes import auth, chat, history
 from shared.config import get_settings
 

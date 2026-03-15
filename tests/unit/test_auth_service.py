@@ -1,4 +1,4 @@
-from backend.infrastructure.auth import AuthService
+from backend.application.services.auth import AuthService
 from shared.config import Settings
 
 

@@ -1,8 +1,8 @@
 import pytest
 from sqlmodel import Session, SQLModel, create_engine
 
+from backend.application.repositories import MessageRepository, SessionRepository, UserRepository
 from backend.domain.models import ChatMessage, ChatSession, User
-from backend.infrastructure.repositories import MessageRepository, SessionRepository, UserRepository
 
 
 @pytest.fixture

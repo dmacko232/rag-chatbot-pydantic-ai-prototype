@@ -2,6 +2,7 @@ import sqlite3
 from pathlib import Path
 
 import sqlite_vec
+from sqlalchemy import text
 from sqlmodel import Session, SQLModel, create_engine
 
 from shared.config import Settings
@@ -29,14 +30,23 @@ def init_db(settings: Settings):
     SQLModel.metadata.create_all(engine)
 
     with Session(engine) as session:
-        session.execute(
+        session.execute(text(
             """
             CREATE VIRTUAL TABLE IF NOT EXISTS chunk_embeddings USING vec0(
                 chunk_id INTEGER PRIMARY KEY,
                 embedding FLOAT[1024]
             )
             """
-        )
+        ))
+        session.execute(text(
+            """
+            CREATE VIRTUAL TABLE IF NOT EXISTS chunk_fts USING fts5(
+                content,
+                content='chunk',
+                content_rowid='id'
+            )
+            """
+        ))
         session.commit()
 
     return engine

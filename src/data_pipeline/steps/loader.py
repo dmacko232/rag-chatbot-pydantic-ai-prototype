@@ -1,23 +1,20 @@
 import logging
 from pathlib import Path
 
-from data_pipeline.pipeline import PipelineContext, Step
+from data_pipeline.interfaces import IDocumentLoader
+from data_pipeline.models import RawDocument
 
 logger = logging.getLogger(__name__)
 
 
-class LoaderStep(Step):
-    """Load raw text files from a local directory."""
-
+class FileDocumentLoader(IDocumentLoader):
     def __init__(self, data_dir: str = "data/raw") -> None:
         self._data_dir = Path(data_dir)
 
-    async def run(self, ctx: PipelineContext) -> PipelineContext:
+    async def load(self) -> list[RawDocument]:
         files = sorted(self._data_dir.glob("*.txt"), key=lambda p: int(p.stem))
         logger.info("Found %d files in %s", len(files), self._data_dir)
-
-        for file_path in files:
-            content = file_path.read_text(encoding="utf-8")
-            ctx.raw_documents.append({"source_file": file_path.name, "content": content})
-
-        return ctx
+        return [
+            RawDocument(source_file=f.name, content=f.read_text(encoding="utf-8"))
+            for f in files
+        ]

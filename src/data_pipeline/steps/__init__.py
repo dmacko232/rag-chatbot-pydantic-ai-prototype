@@ -1,15 +1,16 @@
-from data_pipeline.steps.chunker import LLMChunkerStep
-from data_pipeline.steps.cleaner import CleanerStep
-from data_pipeline.steps.embedder import EmbedderStep
-from data_pipeline.steps.indexer import IndexerStep
-from data_pipeline.steps.loader import LoaderStep
-from data_pipeline.steps.raptor import RaptorStep
+from data_pipeline.steps.chunker import FixedSizeChunker, LLMDocumentChunker
+from data_pipeline.steps.cleaner import RegexDocumentCleaner
+from data_pipeline.steps.embedder import CohereChunkEmbedder
+from data_pipeline.steps.indexer import SQLiteDocumentIndexer
+from data_pipeline.steps.loader import FileDocumentLoader
+from data_pipeline.steps.raptor import LLMRaptorSummarizer
 
 __all__ = [
-    "CleanerStep",
-    "EmbedderStep",
-    "IndexerStep",
-    "LLMChunkerStep",
-    "LoaderStep",
-    "RaptorStep",
+    "CohereChunkEmbedder",
+    "FileDocumentLoader",
+    "FixedSizeChunker",
+    "LLMDocumentChunker",
+    "LLMRaptorSummarizer",
+    "RegexDocumentCleaner",
+    "SQLiteDocumentIndexer",
 ]

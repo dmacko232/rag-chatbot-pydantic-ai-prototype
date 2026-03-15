@@ -38,7 +38,8 @@ class Settings(BaseSettings):
 
     phoenix_host: str = "http://localhost:6006"
 
-    reranker_threshold: float = 0.3
+    embed_batch_delay: float = 15.0  # seconds between embedding batches; 0 to disable
+
     max_tool_calls: int = 3
 
 
