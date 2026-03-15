@@ -1,8 +1,14 @@
 chunking:
-  strategy: fixed  # "fixed" or "llm"
+  strategy: llm  # "fixed" or "llm"
   chunk_size: 2000  # ~512 tokens (for fixed strategy)
   overlap: 200     # ~10% overlap (for fixed strategy)
-  llm_concurrency: 20  # max parallel LLM chunking calls
+  llm_concurrency: 4  # max parallel LLM chunking calls
+
+raptor:
+  enabled: false      # set to true to run RAPTOR summarization
+  cluster_size: 10    # target chunks per cluster
+  max_levels: 3       # max recursion depth
+  concurrency: 4      # parallel LLM summarization calls
 
 retrieval:
   vector_top_k: 100
@@ -20,7 +26,6 @@ chunking_system_prompt: |
   - Each chunk should be a coherent, self-contained passage of roughly 200-400 words.
   - Split on semantic boundaries (topic shifts, new sections, different subjects).
   - For short documents, 1-3 chunks is fine. Don't force splits where none exist.
-  - For each chunk, also provide a larger "context" version that includes surrounding text for LLM grounding.
   - Extract document-level metadata: publication year, business segment, and document type.
 
   Respond with valid JSON matching this schema:
@@ -30,27 +35,21 @@ chunking_system_prompt: |
     "document_type": "<financial_report|product_launch|partnership|award|general>",
     "chunks": [
       {
-        "content": "<chunk text for retrieval, 200-400 words>",
-        "content_for_llm": "<larger context including surrounding text>"
+        "content": "<chunk text for retrieval, 200-400 words>"
       }
     ]
   }
 
 raptor_system_prompt: |
-  You are a summarisation assistant. Given a collection of press release excerpts from Deutsche Telekom, produce a set of high-level summary passages that capture the main themes and facts.
+  You are a summarisation assistant for Deutsche Telekom press releases.
 
-  These summaries will be used to answer global/abstract questions like:
-  - "What is Deutsche Telekom's overall strategy?"
-  - "What sustainability initiatives does Telekom pursue?"
-  - "How has Telekom's financial performance trended?"
+  You will receive a group of related press release passages that belong to the same thematic cluster. Write a single coherent summary (200-400 words) that captures the key facts, themes, and relationships across these passages.
 
-  Generate 5-10 summary passages, each 150-300 words, covering distinct themes.
+  Be factual and specific. Include concrete details like names, dates, numbers, and outcomes where available. Do not add information not present in the passages.
 
   Respond with valid JSON:
   {
-    "summaries": [
-      {"content": "<summary passage>"}
-    ]
+    "summary": "<your summary text>"
   }
 
 chat_system_prompt: |

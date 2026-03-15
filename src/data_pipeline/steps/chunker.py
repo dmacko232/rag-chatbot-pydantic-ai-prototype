@@ -71,13 +71,8 @@ class LLMDocumentChunker(IDocumentChunker):
                 logger.info("Chunking document %d/%d: %s", idx + 1, total, doc.source_file)
                 parsed = await self._call_llm(system_prompt, doc.content)
 
-            chunks = [
-                ChunkData(
-                    content=c["content"],
-                    content_for_llm=c.get("content_for_llm", c["content"]),
-                )
-                for c in parsed.get("chunks", [])
-            ]
+            raw_chunks = [c["content"] for c in parsed.get("chunks", [])]
+            chunks = self._build_chunks_with_context(raw_chunks)
 
             return ChunkedDocument(
                 source_file=doc.source_file,
@@ -90,6 +85,17 @@ class LLMDocumentChunker(IDocumentChunker):
 
         results = await asyncio.gather(*[_process(i, doc) for i, doc in enumerate(documents)])
         return list(results)
+
+    @staticmethod
+    def _build_chunks_with_context(raw_chunks: list[str], window: int = 2) -> list[ChunkData]:
+        """Build content_for_llm by concatenating neighboring chunks (window before + current + window after)."""
+        chunks: list[ChunkData] = []
+        for i, content in enumerate(raw_chunks):
+            start = max(0, i - window)
+            end = min(len(raw_chunks), i + window + 1)
+            context = "\n\n".join(raw_chunks[start:end])
+            chunks.append(ChunkData(content=content, content_for_llm=context))
+        return chunks
 
     async def _call_llm(self, system_prompt: str, content: str) -> dict:
         response = await self._client.chat.completions.create(
@@ -106,4 +112,4 @@ class LLMDocumentChunker(IDocumentChunker):
             return json.loads(raw)
         except json.JSONDecodeError:
             logger.error("Failed to parse LLM chunking response")
-            return {"chunks": [{"content": content, "content_for_llm": content}]}
+            return {"chunks": [{"content": content}]}

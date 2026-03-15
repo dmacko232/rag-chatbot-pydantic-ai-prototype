@@ -51,7 +51,7 @@ class DataPipeline:
 
         if self._raptor:
             logger.info("Generating RAPTOR summaries")
-            await self._raptor.summarize(raw_docs)
+            await self._raptor.summarize(chunked_docs)
 
         logger.info("Pipeline complete")
         return chunked_docs

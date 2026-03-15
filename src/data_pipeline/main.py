@@ -35,13 +35,20 @@ def _build_chunker(settings) -> IDocumentChunker:
 async def main() -> None:
     settings = get_settings()
 
+    raptor_cfg = get_config_section("raptor")
+    raptor = LLMRaptorSummarizer(settings) if raptor_cfg.get("enabled", False) else None
+    if raptor:
+        logger.info("RAPTOR enabled")
+    else:
+        logger.info("RAPTOR disabled")
+
     pipeline = DataPipeline(
         loader=FileDocumentLoader(data_dir="data/raw"),
         cleaner=RegexDocumentCleaner(),
         chunker=_build_chunker(settings),
         embedder=CohereChunkEmbedder(settings),
         indexer=SQLiteDocumentIndexer(settings),
-        raptor=LLMRaptorSummarizer(settings),
+        raptor=raptor,
     )
 
     result = await pipeline.run()
