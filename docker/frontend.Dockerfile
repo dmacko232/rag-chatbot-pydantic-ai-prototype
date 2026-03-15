@@ -2,10 +2,10 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY src/frontend/package.json src/frontend/package-lock.json ./
 RUN npm ci
 
-COPY . .
+COPY src/frontend/ .
 
 ARG NEXT_PUBLIC_API_URL=http://localhost:8000/api
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}

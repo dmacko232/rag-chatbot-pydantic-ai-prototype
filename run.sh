@@ -2,36 +2,52 @@
 set -euo pipefail
 
 echo "=== Telekom RAG Chatbot ==="
+echo ""
 
 if [ ! -f .env ]; then
-    echo "ERROR: .env file not found. Copy .env.example and fill in your keys."
+    echo "ERROR: .env file not found."
+    echo "  cp .env.example .env"
+    echo "  Then fill in your API keys."
     exit 1
 fi
 
-echo "[1/4] Installing Python dependencies..."
-uv sync --all-extras
+# Try Docker first, fall back to local
+if command -v docker &>/dev/null && docker info &>/dev/null && docker compose version &>/dev/null; then
+    echo "Starting with Docker Compose..."
+    echo ""
+    docker compose up --build
+else
+    echo "Docker not available — running locally."
+    echo ""
 
-echo "[2/4] Running data pipeline..."
-PYTHONPATH=src uv run python -m data_pipeline.main
+    set -a && source .env && set +a
+    export PYTHONPATH=src
 
-echo "[3/4] Starting backend..."
-PYTHONPATH=src uv run uvicorn backend.main:app --host 0.0.0.0 --port 8000 &
-BACKEND_PID=$!
+    echo "[1/4] Installing Python dependencies..."
+    uv sync --all-extras
 
-echo "[4/4] Starting frontend..."
-cd src/frontend
-npm install --silent
-npm run dev &
-FRONTEND_PID=$!
-cd ../..
+    echo "[2/4] Running data pipeline..."
+    uv run python -m data_pipeline.main
 
-echo ""
-echo "Backend:  http://localhost:8000"
-echo "Frontend: http://localhost:3000"
-echo "API docs: http://localhost:8000/docs"
-echo ""
-echo "Test account: username=test, password=test"
-echo "Press Ctrl+C to stop all services."
+    echo "[3/4] Starting backend..."
+    uv run uvicorn backend.main:app --host 0.0.0.0 --port 8000 &
+    BACKEND_PID=$!
 
-trap "kill $BACKEND_PID $FRONTEND_PID 2>/dev/null; exit" INT TERM
-wait
+    echo "[4/4] Starting frontend..."
+    cd src/frontend
+    npm install --silent
+    npm run dev &
+    FRONTEND_PID=$!
+    cd ../..
+
+    echo ""
+    echo "Backend:  http://localhost:8000"
+    echo "Frontend: http://localhost:3000"
+    echo "API docs: http://localhost:8000/docs"
+    echo ""
+    echo "Test account: username=test, password=test"
+    echo "Press Ctrl+C to stop all services."
+
+    trap "kill $BACKEND_PID $FRONTEND_PID 2>/dev/null; exit" INT TERM
+    wait
+fi

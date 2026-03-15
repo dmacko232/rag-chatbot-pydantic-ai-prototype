@@ -16,7 +16,6 @@ import {
 interface Message {
   role: "user" | "assistant";
   content: string;
-  citations?: { source_file: string }[];
 }
 
 interface Session {
@@ -64,7 +63,6 @@ export default function ChatPage() {
         data.messages.map((m: Message) => ({
           role: m.role,
           content: m.content,
-          citations: m.citations,
         }))
       );
     } catch {
@@ -90,7 +88,7 @@ export default function ChatPage() {
 
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "", citations: [] },
+        { role: "assistant", content: "" },
       ]);
 
       try {
@@ -169,7 +167,6 @@ export default function ChatPage() {
                 key={i}
                 role={msg.role}
                 content={msg.content}
-                citations={msg.citations}
                 isStreaming={
                   i === messages.length - 1 && msg.role === "assistant" && isLoading
                 }

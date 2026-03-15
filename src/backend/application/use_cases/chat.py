@@ -2,7 +2,9 @@ import logging
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 
+from openai import AsyncAzureOpenAI
 from pydantic_ai import Agent, RunContext
+from pydantic_ai.messages import ModelRequest, ModelResponse, TextPart, UserPromptPart
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
@@ -23,12 +25,14 @@ class ChatDeps:
 
 def _build_model() -> OpenAIChatModel:
     settings = get_settings()
+    client = AsyncAzureOpenAI(
+        api_key=settings.azure_openai_api_key,
+        azure_endpoint=settings.azure_openai_endpoint,
+        api_version=settings.azure_openai_api_version,
+    )
     return OpenAIChatModel(
         settings.azure_openai_deployment,
-        provider=OpenAIProvider(
-            base_url=f"{settings.azure_openai_endpoint}openai/deployments/{settings.azure_openai_deployment}",
-            api_key=settings.azure_openai_api_key,
-        ),
+        provider=OpenAIProvider(openai_client=client),
     )
 
 
@@ -89,10 +93,12 @@ class ChatUseCase:
     async def execute_stream(
         self, message: str, history: list[HistoryEntry] | None = None
     ) -> AsyncIterator[str]:
-        message_history = [
-            {"role": entry.role, "content": entry.content}
-            for entry in (history or [])
-        ]
+        message_history = []
+        for entry in history or []:
+            if entry.role == "user":
+                message_history.append(ModelRequest(parts=[UserPromptPart(content=entry.content)]))
+            else:
+                message_history.append(ModelResponse(parts=[TextPart(content=entry.content)]))
 
         async with chat_agent.run_stream(message, deps=self._deps, message_history=message_history) as result:
             async for chunk in result.stream_text(delta=True):
